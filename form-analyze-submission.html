@@ -1,0 +1,49 @@
+<form role="form" name="form">
+
+
+  <div class="form-group">
+    <label for="employeeId-field">Id Colaborador</label>
+    <input required
+           cam-variable-name="employeeId"
+           cam-variable-type="String"
+           class="form-control" />
+  </div>
+
+  <div class="form-group">
+    <label for="dtViagem-field">Data da Viagem</label>
+    <input cam-variable-name="dtViagem"
+           cam-variable-type="Date"
+           class="form-control"
+           type="date" />
+  </div>
+
+  <div class="form-group">
+    <label for="amount-field">Valor do Adiantamento</label>
+    <input cam-variable-name="vlrAdiantamento"
+           cam-variable-type="Double"
+           class="form-control"
+           type="number" min="1" step="any" />
+  </div>
+
+  <div>
+    <table style="width:100%">
+      <tr>
+        <th><label for="anexo-field">Description</label></th>
+        <th><label for="anexo-field">File</label></th>
+      </tr>
+      <tr>
+        <td>
+          <input cam-variable-name="anexoDescricao"
+               cam-variable-type="String"
+               class="form-control" /></td>
+        </td>
+        <td>
+          <input type="file"
+               cam-variable-name="anexoFile"
+               cam-variable-type="File"
+               cam-max-filesize="10000000" />
+        </td>
+      </tr>
+    </table>  
+  </div>
+</form>
