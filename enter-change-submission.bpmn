@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_02ek0co" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.8.1" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
   <bpmn:message id="Message_1mpjdn0" name="submissionChangedMsg" />
-  <bpmn:process id="enter-change-submission-subprocess" name="enter-change-submission-subprocess" isExecutable="true">
-    <bpmn:sequenceFlow id="Flow_0cunhgs" name="No" sourceRef="Gateway_0b08l78" targetRef="Gateway_1x3zy6c">
+  <bpmn:process id="enter-change-submission-process" name="enter-change-submission-process" isExecutable="true">
+    <bpmn:sequenceFlow id="Flow_0cunhgs" name="No" sourceRef="validSubmissionGateway" targetRef="valid-submission-joinGateway">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${validated == false}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_0csajmq" sourceRef="Event_0g99zxb" targetRef="Gateway_1x3zy6c" />
-    <bpmn:sequenceFlow id="Flow_02fuewx" sourceRef="Gateway_0b08l78" targetRef="Gateway_0wvkgnl" />
-    <bpmn:sequenceFlow id="Flow_0xo3jlm" sourceRef="Activity_07iu8lb" targetRef="Gateway_0b08l78" />
-    <bpmn:sequenceFlow id="Flow_1wmi81i" sourceRef="Activity_0n4ztlm" targetRef="Activity_07iu8lb" />
-    <bpmn:sequenceFlow id="Flow_0l94erq" sourceRef="Gateway_1x3zy6c" targetRef="Activity_0n4ztlm" />
-    <bpmn:exclusiveGateway id="Gateway_1x3zy6c">
+    <bpmn:sequenceFlow id="Flow_0csajmq" sourceRef="submission-startEvent" targetRef="valid-submission-joinGateway" />
+    <bpmn:sequenceFlow id="Flow_02fuewx" sourceRef="validSubmissionGateway" targetRef="isSubmissionUpdateGateway" />
+    <bpmn:sequenceFlow id="Flow_0xo3jlm" sourceRef="validateSubmissionTask" targetRef="validSubmissionGateway" />
+    <bpmn:sequenceFlow id="Flow_1wmi81i" sourceRef="upload-submission-task" targetRef="validateSubmissionTask" />
+    <bpmn:sequenceFlow id="Flow_0l94erq" sourceRef="valid-submission-joinGateway" targetRef="upload-submission-task" />
+    <bpmn:exclusiveGateway id="valid-submission-joinGateway">
       <bpmn:incoming>Flow_0csajmq</bpmn:incoming>
       <bpmn:incoming>Flow_0cunhgs</bpmn:incoming>
       <bpmn:outgoing>Flow_0l94erq</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:exclusiveGateway id="Gateway_0b08l78" name="Valid submission?" default="Flow_02fuewx">
+    <bpmn:exclusiveGateway id="validSubmissionGateway" name="Valid submission?" default="Flow_02fuewx">
       <bpmn:incoming>Flow_0xo3jlm</bpmn:incoming>
       <bpmn:outgoing>Flow_02fuewx</bpmn:outgoing>
       <bpmn:outgoing>Flow_0cunhgs</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:startEvent id="Event_0g99zxb" name="Submission change requested">
+    <bpmn:startEvent id="submission-startEvent" name="Submission change requested">
       <bpmn:outgoing>Flow_0csajmq</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:serviceTask id="Activity_07iu8lb" name="Validate Submission" camunda:class="com.wks.tasks.camundawebapps.delegate.SampleDelegate">
+    <bpmn:serviceTask id="validateSubmissionTask" name="Validate Submission" camunda:class="com.wks.tasks.camundawebapps.delegate.SampleDelegate">
       <bpmn:extensionElements>
         <camunda:executionListener event="start">
           <camunda:script scriptFormat="Javascript">execution.setVariable("validated", true);</camunda:script>
@@ -32,39 +32,49 @@
       <bpmn:incoming>Flow_1wmi81i</bpmn:incoming>
       <bpmn:outgoing>Flow_0xo3jlm</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:userTask id="Activity_0n4ztlm" name="Upload Documents or share content URL">
+    <bpmn:userTask id="upload-submission-task" name="Upload Submission">
       <bpmn:documentation>You must send your monthly bookkeeping submission to Fenero before the 10th of the following month. For example, all documents relating to January must reach us before 10th February.</bpmn:documentation>
       <bpmn:extensionElements>
         <camunda:formData>
           <camunda:formField id="information" label="Information" type="string" />
           <camunda:formField id="update" label="Update" type="boolean" defaultValue="${false}" />
         </camunda:formData>
-        <camunda:inputOutput>
-          <camunda:outputParameter name="information">${information}</camunda:outputParameter>
-        </camunda:inputOutput>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0l94erq</bpmn:incoming>
       <bpmn:outgoing>Flow_1wmi81i</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:endEvent id="Event_11yp3xe" name="Submission Changed">
+    <bpmn:endEvent id="submission-changed-endEvent" name="Submission Changed">
       <bpmn:incoming>Flow_1b7mndv</bpmn:incoming>
       <bpmn:messageEventDefinition id="MessageEventDefinition_077bf6a" messageRef="Message_1mpjdn0" camunda:expression="${execution.getProcessEngineServices().getRuntimeService().createMessageCorrelation(&#34;submissionChangedMsg&#34;).processInstanceBusinessKey(execution.getBusinessKey()).correlateWithResult()}" />
     </bpmn:endEvent>
-    <bpmn:exclusiveGateway id="Gateway_0wvkgnl" name="Is this a submission update?" default="Flow_0s302hf">
+    <bpmn:exclusiveGateway id="isSubmissionUpdateGateway" name="Is this a submission update?" default="Flow_0s302hf">
       <bpmn:incoming>Flow_02fuewx</bpmn:incoming>
       <bpmn:outgoing>Flow_1b7mndv</bpmn:outgoing>
       <bpmn:outgoing>Flow_0s302hf</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:sequenceFlow id="Flow_1b7mndv" name="Yes" sourceRef="Gateway_0wvkgnl" targetRef="Event_11yp3xe">
+    <bpmn:sequenceFlow id="Flow_1b7mndv" name="Yes" sourceRef="isSubmissionUpdateGateway" targetRef="submission-changed-endEvent">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${update == true}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:endEvent id="Event_0wu8dvn" name="Submission Created">
+    <bpmn:endEvent id="submision-created-endEvent" name="Submission Created">
       <bpmn:incoming>Flow_0s302hf</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_0s302hf" sourceRef="Gateway_0wvkgnl" targetRef="Event_0wu8dvn" />
+    <bpmn:sequenceFlow id="Flow_0s302hf" sourceRef="isSubmissionUpdateGateway" targetRef="submision-created-endEvent" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="enter-change-submission-subprocess">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="enter-change-submission-process">
+      <bpmndi:BPMNEdge id="Flow_0s302hf_di" bpmnElement="Flow_0s302hf">
+        <di:waypoint x="810" y="202" />
+        <di:waypoint x="810" y="280" />
+        <di:waypoint x="882" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1b7mndv_di" bpmnElement="Flow_1b7mndv">
+        <di:waypoint x="810" y="152" />
+        <di:waypoint x="810" y="70" />
+        <di:waypoint x="882" y="70" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="816" y="108" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0l94erq_di" bpmnElement="Flow_0l94erq">
         <di:waypoint x="305" y="177" />
         <di:waypoint x="350" y="177" />
@@ -94,53 +104,43 @@
           <dc:Bounds x="473" y="39" width="15" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1b7mndv_di" bpmnElement="Flow_1b7mndv">
-        <di:waypoint x="810" y="152" />
-        <di:waypoint x="810" y="70" />
-        <di:waypoint x="882" y="70" />
+      <bpmndi:BPMNShape id="Gateway_1x3zy6c_di" bpmnElement="valid-submission-joinGateway" isMarkerVisible="true">
+        <dc:Bounds x="255" y="152" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="816" y="108" width="18" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0s302hf_di" bpmnElement="Flow_0s302hf">
-        <di:waypoint x="810" y="202" />
-        <di:waypoint x="810" y="280" />
-        <di:waypoint x="882" y="280" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="Activity_0n4ztlm_di" bpmnElement="Activity_0n4ztlm">
-        <dc:Bounds x="350" y="137" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_07iu8lb_di" bpmnElement="Activity_07iu8lb">
-        <dc:Bounds x="499" y="137" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0g99zxb_di" bpmnElement="Event_0g99zxb">
-        <dc:Bounds x="180" y="159" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="154" y="202" width="89" height="27" />
+          <dc:Bounds x="268" y="209" width="24" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_0b08l78_di" bpmnElement="Gateway_0b08l78" isMarkerVisible="true">
+      <bpmndi:BPMNShape id="Gateway_0b08l78_di" bpmnElement="validSubmissionGateway" isMarkerVisible="true">
         <dc:Bounds x="655" y="152" width="50" height="50" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="636" y="209" width="88" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_1x3zy6c_di" bpmnElement="Gateway_1x3zy6c" isMarkerVisible="true">
-        <dc:Bounds x="255" y="152" width="50" height="50" />
+      <bpmndi:BPMNShape id="Event_0g99zxb_di" bpmnElement="submission-startEvent">
+        <dc:Bounds x="180" y="159" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="154" y="202" width="89" height="27" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_180mnd4_di" bpmnElement="Event_11yp3xe">
+      <bpmndi:BPMNShape id="Activity_07iu8lb_di" bpmnElement="validateSubmissionTask">
+        <dc:Bounds x="499" y="137" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0n4ztlm_di" bpmnElement="upload-submission-task">
+        <dc:Bounds x="350" y="137" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_180mnd4_di" bpmnElement="submission-changed-endEvent">
         <dc:Bounds x="882" y="52" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="871" y="95" width="58" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_0wvkgnl_di" bpmnElement="Gateway_0wvkgnl" isMarkerVisible="true">
+      <bpmndi:BPMNShape id="Gateway_0wvkgnl_di" bpmnElement="isSubmissionUpdateGateway" isMarkerVisible="true">
         <dc:Bounds x="785" y="152" width="50" height="50" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="842" y="157" width="56" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0wu8dvn_di" bpmnElement="Event_0wu8dvn">
+      <bpmndi:BPMNShape id="Event_0wu8dvn_di" bpmnElement="submision-created-endEvent">
         <dc:Bounds x="882" y="262" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="871" y="305" width="58" height="27" />

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_08v9zmy" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.8.1" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
+  <bpmn:process id="analyze-submission-process" name="analyze-submission-process" isExecutable="true">
+    <bpmn:startEvent id="analyze-submission-requested-startEvent" name="Submission Analysis Requested">
+      <bpmn:outgoing>Flow_1grf79s</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="analyze-submission-task" name="Analyze submission">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="approved" label="Approved" type="boolean" defaultValue="true" />
+          <camunda:formField id="information" label="Information" type="string" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1grf79s</bpmn:incoming>
+      <bpmn:outgoing>Flow_1d8so3t</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1grf79s" sourceRef="analyze-submission-requested-startEvent" targetRef="analyze-submission-task" />
+    <bpmn:endEvent id="submission-analyzed-endEvent" name="Submission Analyzed">
+      <bpmn:incoming>Flow_1d8so3t</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1d8so3t" sourceRef="analyze-submission-task" targetRef="submission-analyzed-endEvent" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="analyze-submission-process">
+      <bpmndi:BPMNEdge id="Flow_1d8so3t_di" bpmnElement="Flow_1d8so3t">
+        <di:waypoint x="360" y="120" />
+        <di:waypoint x="412" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1grf79s_di" bpmnElement="Flow_1grf79s">
+        <di:waypoint x="208" y="120" />
+        <di:waypoint x="260" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_1xw9tg3_di" bpmnElement="analyze-submission-requested-startEvent">
+        <dc:Bounds x="172" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="162" y="145" width="58" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_16ogau7_di" bpmnElement="analyze-submission-task">
+        <dc:Bounds x="260" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_07pb3zb_di" bpmnElement="submission-analyzed-endEvent">
+        <dc:Bounds x="412" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="401" y="145" width="58" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
